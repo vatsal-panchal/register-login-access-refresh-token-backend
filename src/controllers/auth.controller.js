@@ -166,6 +166,23 @@ export const postController = async (req, res) => {
 };
 
 export const refreshController = async (req, res) => {
+
+    /**
+ * Refresh Token
+ *
+ * 1. Get refresh token from cookie
+ * 2. Check refresh token exists
+ * 3. Verify refresh token
+ * 4. Find user in DB
+ * 5. Check user exists
+ * 6. Compare refresh token with stored hash
+ * 7. Generate new access token and refresh token
+ * 8. Hash new refresh token
+ * 9. Save new refresh token in DB
+ * 10. Send new refresh token in cookie
+ * 11. Send new access token in response
+ */
+
   const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
@@ -174,11 +191,17 @@ export const refreshController = async (req, res) => {
       message: "refresh token not found",
     });
   }
-
   try {
     const decodedToken = verifyRefreshToken(refreshToken);
 
     const user = await userModel.findById(decodedToken.id);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     const isValidRefreshToken = await bcrypt.compare(
       refreshToken,

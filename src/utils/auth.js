@@ -27,11 +27,8 @@ export const verifyAccessToken = (token) => {
   return decode;
 };
 
-export const verifyRefreshToken = (token) =>{
-    const decode = jwt.verify(token,config.REFRESH_TOKEN_SECRET)
+export const verifyRefreshToken = (token) => {
+  const decode = jwt.verify(token, config.REFRESH_TOKEN_SECRET);
 
-    return decode
-}
-
-
-
+  return decode;
+};
