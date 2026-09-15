@@ -28,6 +28,9 @@ const userSchema = new mongoose.Schema(
       minLength: [6, "Password must be at least 6 characters"],
       maxLength: [72, "Password cannot exceed 72 characters"],
     },
+    refreshToken:{
+      type:String,
+    }
   },
   {
     timestamps: true,
