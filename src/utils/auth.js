@@ -20,3 +20,18 @@ export const generateAccessAndRefreshToken = (userId) => {
 
   return { accessToken, refreshToken };
 };
+
+export const verifyAccessToken = (token) => {
+  const decode = jwt.verify(token, config.ACCESS_TOKEN_SECRET);
+
+  return decode;
+};
+
+export const verifyRefreshToken = (token) =>{
+    const decode = jwt.verify(token,config.REFRESH_TOKEN_SECRET)
+
+    return decode
+}
+
+
+

@@ -1,6 +1,9 @@
 import { userModel } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
-import { generateAccessAndRefreshToken } from "../utils/auth.js";
+import {
+  generateAccessAndRefreshToken,
+  verifyRefreshToken,
+} from "../utils/auth.js";
 
 export const registerController = async (req, res) => {
   /**
@@ -152,6 +155,62 @@ export const loginController = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
+    });
+  }
+};
+
+export const postController = async (req, res) => {
+  let data = req.user;
+
+  res.send(data);
+};
+
+export const refreshController = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({
+      success: false,
+      message: "refresh token not found",
+    });
+  }
+
+  try {
+    const decodedToken = verifyRefreshToken(refreshToken);
+
+    const user = await userModel.findById(decodedToken.id);
+
+    const isValidRefreshToken = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+
+    if (!isValidRefreshToken) {
+      return res.status(401).json({
+        message: "invalid refresh token",
+      });
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      generateAccessAndRefreshToken(user._id);
+
+    const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 12);
+
+    user.refreshToken = hashedRefreshToken;
+    await user.save();
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "token refreshed successfully",
+      accessToken,
+    });
+  } catch (error) {
+    return res.status(401).json({
+      message: "invalid or expired refresh token",
     });
   }
 };
